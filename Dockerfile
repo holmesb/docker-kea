@@ -2,6 +2,8 @@ FROM alpine:edge
 
 ENV KEA_URL https://downloads.isc.org/isc/kea/1.6.2/kea-1.6.2.tar.gz
 
+RUN addgroup -S kea && adduser -S kea -G kea
+
 RUN set -x \
   \
   && echo http://dl-cdn.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories \
@@ -48,4 +50,18 @@ RUN set -x \
       | awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
   )" \
   && apk add --virtual .kea-rundeps $runDeps \
-  && apk del .build-deps
+  && apk add tcpdump \
+  && apk add libcap \
+  && apk add iptables \
+  && apk add curl \
+  && apk del .build-deps \
+  && chgrp -R kea /usr/local \
+  && chown -R kea /var/lib/kea \
+  && chgrp -R kea /run/kea \
+  && chown -R kea /run/kea \
+  # Allows kea executables, running as a non-root user, to open privileged network ports:
+  && setcap 'cap_net_bind_service,cap_net_raw=+ep' /usr/local/sbin/kea-dhcp4 \
+  && setcap 'cap_net_bind_service,cap_net_raw=+ep' /usr/local/sbin/kea-dhcp6
+
+USER kea
+WORKDIR /home/kea
