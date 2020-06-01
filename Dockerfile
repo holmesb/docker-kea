@@ -63,5 +63,5 @@ RUN set -x \
   && setcap 'cap_net_bind_service,cap_net_raw=+ep' /usr/local/sbin/kea-dhcp4 \
   && setcap 'cap_net_bind_service,cap_net_raw=+ep' /usr/local/sbin/kea-dhcp6
 
-USER kea
-WORKDIR /home/kea
+#USER kea
+#WORKDIR /home/kea
